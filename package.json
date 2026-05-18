@@ -1,0 +1,17 @@
+{
+  "name": "qo100-align",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "clean": "node -e \"import('node:fs').then(fs=>fs.rmSync('dist',{recursive:true,force:true}))\"",
+    "dev": "npx serve src -l 5173",
+    "start": "npx serve dist -l 4173"
+  },
+  "devDependencies": {
+    "clean-css": "^5.3.3",
+    "html-minifier-terser": "^7.2.0",
+    "terser": "^5.31.6"
+  }
+}
