@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dish Align Monitor</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <h1>QO100 Dish Align Tool (Winterhill)</h1>
+      <div class="status" id="wsStatus">Disconnected</div>
+    </header>
+
+    <section class="connect-panel card">
+      <div class="conn-row">
+        <div>
+          <label for="wsIp">Receiver IP</label>
+          <input id="wsIp" type="text" value="192.168.10.47" />
+        </div>
+        <div>
+          <label for="wsPort">Port</label>
+          <input id="wsPort" type="number" value="8080" />
+        </div>
+      </div>
+      <label for="rxSelect">Receiver source</label>
+      <select id="rxSelect">
+        <option value="-1">Auto (highest MER)</option>
+      </select>
+      <div class="connect-actions">
+        <button id="connectBtn">Connect</button>
+        <button id="disconnectBtn" class="secondary">Disconnect</button>
+      </div>
+      <div class="panel-head wb-head">
+        <div class="wb-status" id="wbStatus">WB occupancy: not checked</div>
+        <button id="wbFullscreenBtn" class="secondary">Fullscreen</button>
+      </div>
+      <div class="wb-fft-wrap" id="wbFftWrap" hidden>
+        <canvas id="wbFftCanvas" width="900" height="260"></canvas>
+      </div>
+    </section>
+
+    <section class="mer-panel card">
+      <div class="panel-head">
+        <h2>MER</h2>
+        <button id="merFullscreenBtn" class="secondary">Fullscreen</button>
+      </div>
+      <div class="mer-value" id="merValue">--</div>
+      <div class="mer-meta" id="merMeta">Waiting for data</div>
+      <div class="mer-meta" id="rxMeta"></div>
+      <div class="mer-wb-status" id="merWbStatus"></div>
+    </section>
+
+    <section class="chart-panel card">
+      <div class="panel-head">
+        <h2>Trend</h2>
+        <div class="panel-actions">
+          <button id="trendFullscreenBtn" class="secondary">Fullscreen</button>
+          <button id="clearChartBtn" class="secondary">Clear</button>
+        </div>
+      </div>
+      <div class="chart-legend" id="chartLegend"></div>
+      <canvas id="merChart" width="900" height="320"></canvas>
+    </section>
+
+    <section class="audio-panel card">
+      <div class="panel-head">
+        <h2>Audio Tone</h2>
+      </div>
+      <label for="dishSizeSelect">Dish size preset</label>
+      <select id="dishSizeSelect">
+        <option value="custom">Custom / unknown</option>
+        <option value="60">60 cm</option>
+        <option value="75">75 cm</option>
+        <option value="90">90 cm</option>
+        <option value="100">100 cm</option>
+        <option value="110">110 cm</option>
+        <option value="120">120 cm</option>
+        <option value="150">150 cm</option>
+      </select>
+      <label class="switch-row" for="toneEnabled">
+        <span>Enable pitch tone based on MER</span>
+        <span class="switch">
+          <input type="checkbox" id="toneEnabled" />
+          <span class="slider"></span>
+        </span>
+      </label>
+      <div class="tone-map-row">
+        <label for="toneMinMer">Tone map</label>
+        <input id="toneMinMer" type="number" value="0" step="0.1" />
+        <span>to</span>
+        <input id="toneMaxMer" type="number" value="12" step="0.1" />
+        <span>dB</span>
+      </div>
+    </section>
+
+    <section class="debug-panel card">
+      <div class="panel-head">
+        <h2>Payload Debug</h2>
+      </div>
+      <p class="hint">If MER is not detected, check recent messages here and tell me what fields you see.</p>
+      <pre id="debugLog"></pre>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
