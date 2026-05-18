@@ -11,6 +11,7 @@ const rxMetaEl = document.getElementById("rxMeta");
 const debugLogEl = document.getElementById("debugLog");
 const debugPanelEl = document.querySelector(".debug-panel");
 const chartLegendEl = document.getElementById("chartLegend");
+const trendMerEl = document.getElementById("trendMer");
 const wbStatusEl = document.getElementById("wbStatus");
 const merWbStatusEl = document.getElementById("merWbStatus");
 const wbFftWrapEl = document.getElementById("wbFftWrap");
@@ -572,6 +573,7 @@ function updateMer(mer, source, rx = null) {
   if (merPoints.length > maxPoints) merPoints = merPoints.slice(-maxPoints);
 
   merValueEl.textContent = mer.toFixed(2);
+  if (trendMerEl) trendMerEl.textContent = `MER: ${mer.toFixed(2)} dB`;
   let trend = "stable";
   if (lastMer !== null) {
     if (mer > lastMer + 0.05) trend = "up";
@@ -830,6 +832,10 @@ document.addEventListener("fullscreenchange", () => {
 function bindFullscreenButton(buttonEl, openFn) {
   let suppressClickUntil = 0;
   let lastTriggerAt = 0;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let movedDuringTouch = false;
+  const moveThresholdPx = 10;
   const trigger = () => {
     const now = Date.now();
     if (now - lastTriggerAt < 350) return;
@@ -840,11 +846,38 @@ function bindFullscreenButton(buttonEl, openFn) {
 
   buttonEl.addEventListener("pointerup", (e) => {
     if (e.pointerType !== "touch") return;
+    if (movedDuringTouch) {
+      e.preventDefault();
+      return;
+    }
     e.preventDefault();
     trigger();
   });
 
+  buttonEl.addEventListener("touchstart", (e) => {
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    movedDuringTouch = false;
+  }, { passive: true });
+
+  buttonEl.addEventListener("touchmove", (e) => {
+    const t = e.touches && e.touches[0];
+    if (!t) return;
+    if (
+      Math.abs(t.clientX - touchStartX) > moveThresholdPx ||
+      Math.abs(t.clientY - touchStartY) > moveThresholdPx
+    ) {
+      movedDuringTouch = true;
+    }
+  }, { passive: true });
+
   buttonEl.addEventListener("touchend", (e) => {
+    if (movedDuringTouch) {
+      e.preventDefault();
+      return;
+    }
     e.preventDefault();
     trigger();
   }, { passive: false });

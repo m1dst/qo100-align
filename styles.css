@@ -255,6 +255,13 @@ canvas {
   color: #2b4555;
 }
 
+.trend-mer {
+  margin-top: 8px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #203a4a;
+}
+
 .legend-item { display: inline-flex; gap: 6px; align-items: center; }
 
 .legend-swatch {
@@ -511,6 +518,11 @@ body.disconnected .debug-panel {
   border-radius: 0 !important;
   border: 0 !important;
   height: 100% !important;
+}
+
+.chart-panel:fullscreen .trend-mer,
+.pseudo-fullscreen.chart-panel .trend-mer {
+  font-size: clamp(1.1rem, 2vw, 1.8rem);
 }
 
 @media (orientation: portrait) {
