@@ -293,6 +293,7 @@ canvas {
 }
 
 .trend-mer {
+  display: none;
   margin-top: 8px;
   font-size: 0.95rem;
   font-weight: 800;
@@ -575,6 +576,7 @@ body.disconnected .debug-panel {
 
 .chart-panel:fullscreen .trend-mer,
 .pseudo-fullscreen.chart-panel .trend-mer {
+  display: block;
   font-size: clamp(1.1rem, 2vw, 1.8rem);
 }
 
