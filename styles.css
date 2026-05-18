@@ -152,6 +152,8 @@ h2 {
 
 body.disconnected #disconnectBtn { display: none; }
 body:not(.disconnected) #connectBtn { display: none; }
+body.disconnected label[for="rxSelect"],
+body.disconnected #rxSelect { display: none; }
 
 .conn-row {
   display: grid;
@@ -392,8 +394,10 @@ body.disconnected .debug-panel {
 
 .mer-panel:fullscreen .mer-value {
   font-size: min(78vh, 94vw);
-  line-height: 0.82;
+  line-height: 0.9;
   margin: 0;
+  padding: 0.02em 0;
+  overflow: visible;
 }
 
 .mer-panel:fullscreen .mer-meta {
@@ -454,8 +458,10 @@ body.disconnected .debug-panel {
 
 .pseudo-fullscreen.mer-panel .mer-value {
   font-size: min(78vh, 94vw);
-  line-height: 0.82;
+  line-height: 0.9;
   margin: 0;
+  padding: 0.02em 0;
+  overflow: visible;
 }
 
 .pseudo-fullscreen.mer-panel .mer-meta,
@@ -584,6 +590,11 @@ body.disconnected .debug-panel {
 
   canvas { height: 170px; }
   .wb-fft-wrap canvas { height: min(34vh, 250px); }
+
+  .wb-status {
+    max-width: 62%;
+    line-height: 1.2;
+  }
 }
 
 @media (min-width: 980px) {

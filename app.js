@@ -197,11 +197,12 @@ async function exitAnyFullscreen() {
 }
 
 function setWbStatus(text, level = "") {
-  wbStatusEl.textContent = text;
+  const display = text.replace("Occupancy Warning: ", "Occupancy Warning:<wbr> ");
+  wbStatusEl.innerHTML = display;
   wbStatusEl.classList.remove("ok", "warn");
   if (level) wbStatusEl.classList.add(level);
 
-  merWbStatusEl.textContent = text;
+  merWbStatusEl.innerHTML = display;
   merWbStatusEl.classList.remove("ok", "warn");
   if (level) merWbStatusEl.classList.add(level);
 }
