@@ -50,6 +50,9 @@
         <button id="connectBtn">Connect</button>
         <button id="disconnectBtn" class="secondary">Disconnect</button>
       </div>
+      <div class="ws-scheme-warning" id="wsSchemeWarn" hidden>
+        HTTPS page detected: browsers block insecure <code>ws://</code> connections. Use <code>wss://</code> (TLS) or open this app over <code>http://</code> on your LAN.
+      </div>
       <div class="panel-head wb-head">
         <div class="wb-status" id="wbStatus">WB occupancy: not checked</div>
         <button id="wbFullscreenBtn" class="secondary">Fullscreen</button>

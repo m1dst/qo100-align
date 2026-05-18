@@ -4,6 +4,7 @@ const wsPortInput = document.getElementById("wsPort");
 const rxSelectEl = document.getElementById("rxSelect");
 const connectBtn = document.getElementById("connectBtn");
 const disconnectBtn = document.getElementById("disconnectBtn");
+const wsSchemeWarnEl = document.getElementById("wsSchemeWarn");
 const globalExitFsBtn = document.getElementById("globalExitFsBtn");
 const merValueEl = document.getElementById("merValue");
 const merMetaEl = document.getElementById("merMeta");
@@ -190,6 +191,12 @@ function saveLastConnection(ip, port) {
   try {
     localStorage.setItem(LAST_CONN_STORAGE_KEY, JSON.stringify({ ip, port }));
   } catch {}
+}
+
+function updateWsSecurityWarning() {
+  if (!wsSchemeWarnEl) return;
+  const isHttpsPage = window.location.protocol === "https:";
+  wsSchemeWarnEl.hidden = !isHttpsPage;
 }
 
 function isIOSLike() {
@@ -863,6 +870,12 @@ function connect() {
   if (!ip) return;
   const url = `ws://${ip}:${port}`;
 
+  if (window.location.protocol === "https:") {
+    setStatus("Blocked by browser security (HTTPS + ws://)");
+    updateWsSecurityWarning();
+    return;
+  }
+
   if (ws && ws.readyState === WebSocket.OPEN) ws.close();
   setStatusKey("status_connecting");
   ws = new WebSocket(url, "monitor");
@@ -915,6 +928,7 @@ setStatusKey("status_disconnected");
 setUiConnected(false);
 setWbStatusKey("wb_checking");
 loadLastConnection();
+updateWsSecurityWarning();
 disableIOSZoomGestures();
 updateDynamicViewportHeightVar();
 scheduleMerRefitBurst();
