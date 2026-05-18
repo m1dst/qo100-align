@@ -416,11 +416,15 @@ body.disconnected .debug-panel {
   z-index: 9999 !important;
   border-radius: 0 !important;
   margin: 0 !important;
-  padding: 14px !important;
+  padding: 0 !important;
   width: 100% !important;
   max-width: 100% !important;
   height: 100dvh !important;
   height: var(--app-dvh, 100vh) !important;
+}
+
+.pseudo-fullscreen .panel-head button {
+  display: none !important;
 }
 
 .pseudo-fullscreen.mer-panel {
@@ -429,6 +433,7 @@ body.disconnected .debug-panel {
   justify-content: center;
   align-items: center;
   gap: 12px;
+  padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom)) 14px !important;
 }
 
 .pseudo-fullscreen.mer-panel .panel-head {
@@ -461,6 +466,10 @@ body.disconnected .debug-panel {
 .pseudo-fullscreen.wb-fft-wrap canvas {
   height: 76dvh !important;
   height: calc(var(--app-dvh, 100vh) * 0.76) !important;
+}
+
+.pseudo-fullscreen.chart-panel {
+  padding: max(14px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom)) 10px !important;
 }
 
 .pseudo-fullscreen.wb-fft-wrap {

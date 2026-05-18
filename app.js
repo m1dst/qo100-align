@@ -49,6 +49,7 @@ let activeExpectedRange = null;
 let batcWs = null;
 let batcReconnectTimer = null;
 let pseudoFullscreenEl = null;
+let merRefitTimeout = null;
 
 const DISH_MER_PRESETS = {
   "60": { min: 4.5, max: 8.5 },
@@ -145,6 +146,24 @@ function fitMerValueToWidth() {
   }
   const heightCap = Math.max(28, Math.floor(parent.clientHeight * 0.70));
   merValueEl.style.fontSize = `${Math.min(best, heightCap)}px`;
+}
+
+function scheduleMerRefitBurst() {
+  // Rotation/layout settles across a few frames on iOS; refit repeatedly.
+  requestAnimationFrame(() => {
+    fitMerValueToWidth();
+    requestAnimationFrame(() => {
+      fitMerValueToWidth();
+      requestAnimationFrame(() => {
+        fitMerValueToWidth();
+      });
+    });
+  });
+
+  if (merRefitTimeout) clearTimeout(merRefitTimeout);
+  merRefitTimeout = setTimeout(() => {
+    fitMerValueToWidth();
+  }, 120);
 }
 
 function enterPseudoFullscreen(element) {
@@ -597,8 +616,8 @@ function applyDishPreset() {
 
 function drawChart() {
   if (!canvasReady) return;
-  const w = canvas.width;
-  const h = canvas.height;
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
   ctx.clearRect(0, 0, w, h);
 
   if (!merPoints.length) {
@@ -642,17 +661,16 @@ function drawChart() {
 
   if (activeExpectedRange) {
     const target = (activeExpectedRange.min + activeExpectedRange.max) / 2;
-    if (target >= min && target <= max) {
-      const y = yFor(target);
-      ctx.strokeStyle = "#a86f00";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([7, 5]);
-      ctx.beginPath();
-      ctx.moveTo(pad, y);
-      ctx.lineTo(w - pad, y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-    }
+    const clampedTarget = Math.max(min, Math.min(max, target));
+    const y = yFor(clampedTarget);
+    ctx.strokeStyle = "#a86f00";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([7, 5]);
+    ctx.beginPath();
+    ctx.moveTo(pad, y);
+    ctx.lineTo(w - pad, y);
+    ctx.stroke();
+    ctx.setLineDash([]);
   }
 
 }
@@ -671,7 +689,7 @@ function resizeChartCanvas() {
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   canvasReady = true;
-  fitMerValueToWidth();
+  scheduleMerRefitBurst();
   drawChart();
 }
 
@@ -771,14 +789,16 @@ setUiConnected(false);
 setWbStatus("WB occupancy: checking...");
 disableIOSZoomGestures();
 updateDynamicViewportHeightVar();
-fitMerValueToWidth();
+scheduleMerRefitBurst();
 resizeChartCanvas();
 applyDishPreset();
 updateChartLegend();
 window.addEventListener("resize", resizeChartCanvas);
 window.addEventListener("resize", updateDynamicViewportHeightVar);
+window.addEventListener("orientationchange", scheduleMerRefitBurst);
 if (window.visualViewport) {
   window.visualViewport.addEventListener("resize", updateDynamicViewportHeightVar);
+  window.visualViewport.addEventListener("resize", scheduleMerRefitBurst);
 }
 if (!debugMode && debugPanelEl) {
   debugPanelEl.style.display = "none";
@@ -803,6 +823,7 @@ document.addEventListener("fullscreenchange", () => {
     globalExitFsBtn.hidden = true;
   }
   resizeChartCanvas();
+  scheduleMerRefitBurst();
   if (!wbFftWrapEl.hasAttribute("hidden")) resizeWbFftCanvas();
 });
 
