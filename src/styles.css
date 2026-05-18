@@ -86,9 +86,9 @@ label {
   color: #1d394a;
 }
 
-input[type="text"],
-input[type="number"],
-select {
+.app input[type="text"],
+.app input[type="number"],
+.app select {
   width: 100%;
   margin-top: 4px;
   border: 1px solid var(--line);
@@ -100,9 +100,9 @@ select {
   background: #ffffff;
 }
 
-input:focus,
-select:focus,
-button:focus-visible {
+.app input:focus,
+.app select:focus,
+.app button:focus-visible {
   outline: 2px solid #0f8f874d;
   outline-offset: 1px;
 }
@@ -140,10 +140,11 @@ button.secondary { background: #425a6a; }
   width: auto;
   min-width: 120px;
   max-width: 150px;
-  min-height: 38px;
-  padding: 8px 10px;
+  min-height: 46px;
+  padding: 11px;
   margin-top: 0;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  line-height: 1.2;
 }
 
 .panel-actions {
@@ -171,9 +172,31 @@ body.disconnected label[for="rxSelect"],
 body.disconnected #rxSelect { display: none; }
 
 .conn-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 94px;
-  gap: 8px;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 94px !important;
+  gap: 8px !important;
+  align-items: end;
+}
+
+.conn-row > div {
+  min-width: 0;
+}
+
+.conn-row #wsIp,
+.conn-row #wsPort {
+  display: block !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  min-height: 46px !important;
+  padding: 11px !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 11px !important;
+  background: #ffffff !important;
+  color: var(--ink) !important;
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+  appearance: none;
 }
 
 #wsIp,
