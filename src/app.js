@@ -14,6 +14,7 @@ const chartLegendEl = document.getElementById("chartLegend");
 const trendMerEl = document.getElementById("trendMer");
 const wbStatusEl = document.getElementById("wbStatus");
 const merWbStatusEl = document.getElementById("merWbStatus");
+const wbFftTitleEl = document.getElementById("wbFftTitle");
 const wbFftWrapEl = document.getElementById("wbFftWrap");
 const wbFftCanvas = document.getElementById("wbFftCanvas");
 const wbFftCtx = wbFftCanvas.getContext("2d");
@@ -73,7 +74,7 @@ let currentLang = "en";
 let lastWsStatusKey = "status_disconnected";
 
 const I18N = {
-  en: { title: "QO100 Dish Calibration Tool (Winterhill)", exit_fs: "Exit Fullscreen", receiver_ip: "Receiver IP", port: "Port", receiver_source: "Receiver source", auto_rx: "Auto (highest MER)", connect: "Connect", disconnect: "Disconnect", fullscreen: "Fullscreen", mer: "MER", waiting: "Waiting for data", trend: "Trend", clear: "Clear", trend_mer: "MER: {mer} dB", audio: "Audio Tone", dish_preset: "Dish size preset", custom: "Custom / unknown", enable_tone: "Enable pitch tone based on MER", tone_map: "Tone map", to: "to", payload_debug: "Payload Debug", debug_hint: "If MER is not detected, check recent messages here and tell me what fields you see.", wb_checking: "WB occupancy: checking...", wb_beacon: "WB occupancy: beacon only (transponder appears empty)", wb_warning: "Occupancy Warning: {n} other signal(s) active", wb_unavailable: "WB occupancy: monitor unavailable", wb_reconnecting: "WB occupancy: reconnecting...", status_connecting: "Connecting...", status_connected: "Connected", status_disconnected: "Disconnected", status_error: "Socket error", source: "Source", trend_label: "Trend", demod: "Demod", freq: "Freq", service: "Service", expected: "Expected MER", target: "{v} dB target", no_target: "No target" },
+  en: { title: "QO100 Dish Calibration Tool (Winterhill)", exit_fs: "Exit Fullscreen", receiver_ip: "Receiver IP", port: "Port", receiver_source: "Receiver source", auto_rx: "Auto (highest MER)", connect: "Connect", disconnect: "Disconnect", fullscreen: "Fullscreen", mer: "MER", waiting: "Waiting for data", trend: "Trend", clear: "Clear", trend_mer: "MER: {mer} dB", audio: "Audio Tone", dish_preset: "Dish size preset", custom: "Custom / unknown", enable_tone: "Enable pitch tone based on MER", tone_map: "Tone map", to: "to", payload_debug: "Payload Debug", debug_hint: "If MER is not detected, check recent messages here and tell me what fields you see.", wb_checking: "WB occupancy: checking...", wb_beacon: "WB occupancy: beacon only (transponder appears empty)", wb_warning: "Occupancy Warning: {n} other signal(s) active", wb_unavailable: "WB occupancy: monitor unavailable", wb_reconnecting: "WB occupancy: reconnecting...", wb_fft_title: "BATC Wideband FFT (from BATC website)", status_connecting: "Connecting...", status_connected: "Connected", status_disconnected: "Disconnected", status_error: "Socket error", source: "Source", trend_label: "Trend", demod: "Demod", freq: "Freq", service: "Service", expected: "Expected MER", target: "{v} dB target", no_target: "No target" },
   zh: { title: "QO100 天线校准工具 (Winterhill)", exit_fs: "退出全屏", receiver_ip: "接收器 IP", port: "端口", receiver_source: "接收源", auto_rx: "自动（最高 MER）", connect: "连接", disconnect: "断开", fullscreen: "全屏", mer: "MER", waiting: "等待数据", trend: "趋势", clear: "清除", trend_mer: "MER：{mer} dB", audio: "音频提示", dish_preset: "天线口径预设", custom: "自定义 / 未知", enable_tone: "根据 MER 启用音调", tone_map: "音调映射", to: "到", payload_debug: "负载调试", debug_hint: "若未检测到 MER，请查看最近消息并告诉我字段。", wb_checking: "WB 占用：检查中...", wb_beacon: "WB 占用：仅信标（转发器空闲）", wb_warning: "占用警告：还有 {n} 路信号", wb_unavailable: "WB 占用：监视不可用", wb_reconnecting: "WB 占用：重连中...", status_connecting: "连接中...", status_connected: "已连接", status_disconnected: "已断开", status_error: "连接错误", source: "来源", trend_label: "趋势", demod: "解调", freq: "频率", service: "业务", expected: "期望 MER", target: "目标 {v} dB", no_target: "无目标" },
   es: { title: "Herramienta de Alineación QO100 (Winterhill)", exit_fs: "Salir de pantalla completa", receiver_ip: "IP del receptor", port: "Puerto", receiver_source: "Fuente del receptor", auto_rx: "Auto (MER más alto)", connect: "Conectar", disconnect: "Desconectar", fullscreen: "Pantalla completa", mer: "MER", waiting: "Esperando datos", trend: "Tendencia", clear: "Limpiar", trend_mer: "MER: {mer} dB", audio: "Tono de audio", dish_preset: "Preajuste de antena", custom: "Personalizado / desconocido", enable_tone: "Activar tono según MER", tone_map: "Mapa de tono", to: "a", payload_debug: "Depuración de payload", debug_hint: "Si no se detecta MER, revisa los mensajes recientes.", wb_checking: "Ocupación WB: comprobando...", wb_beacon: "Ocupación WB: solo baliza", wb_warning: "Advertencia de ocupación: {n} señal(es) activas", wb_unavailable: "Ocupación WB: monitor no disponible", wb_reconnecting: "Ocupación WB: reconectando...", status_connecting: "Conectando...", status_connected: "Conectado", status_disconnected: "Desconectado", status_error: "Error de socket", source: "Fuente", trend_label: "Tendencia", demod: "Demod", freq: "Frecuencia", service: "Servicio", expected: "MER esperado", target: "{v} dB objetivo", no_target: "Sin objetivo" },
   hi: { title: "QO100 डिश कैलिब्रेशन टूल (Winterhill)", exit_fs: "फुलस्क्रीन बंद करें", receiver_ip: "रिसीवर IP", port: "पोर्ट", receiver_source: "रिसीवर स्रोत", auto_rx: "ऑटो (सबसे ऊँचा MER)", connect: "कनेक्ट", disconnect: "डिस्कनेक्ट", fullscreen: "फुलस्क्रीन", mer: "MER", waiting: "डेटा की प्रतीक्षा", trend: "रुझान", clear: "साफ़ करें", trend_mer: "MER: {mer} dB", audio: "ऑडियो टोन", dish_preset: "डिश प्रीसेट", custom: "कस्टम / अज्ञात", enable_tone: "MER के आधार पर टोन चालू करें", tone_map: "टोन मैप", to: "से", payload_debug: "पेलोड डिबग", debug_hint: "MER न मिले तो हाल के संदेश देखें।", wb_checking: "WB व्यस्तता: जाँच जारी...", wb_beacon: "WB व्यस्तता: केवल बीकन", wb_warning: "व्यस्तता चेतावनी: {n} अन्य सिग्नल सक्रिय", wb_unavailable: "WB व्यस्तता: मॉनिटर उपलब्ध नहीं", wb_reconnecting: "WB व्यस्तता: पुनः कनेक्ट हो रहा...", status_connecting: "कनेक्ट हो रहा...", status_connected: "कनेक्टेड", status_disconnected: "डिस्कनेक्टेड", status_error: "सॉकेट त्रुटि", source: "स्रोत", trend_label: "रुझान", demod: "डीमॉड", freq: "आवृत्ति", service: "सेवा", expected: "अपेक्षित MER", target: "{v} dB लक्ष्य", no_target: "कोई लक्ष्य नहीं" },
@@ -139,6 +140,7 @@ function applyLanguage(lang) {
   document.querySelector(".tone-map-row span").textContent = t("to");
   document.querySelector(".debug-panel h2").textContent = t("payload_debug");
   document.querySelector(".hint").textContent = t("debug_hint");
+  if (wbFftTitleEl) wbFftTitleEl.textContent = t("wb_fft_title");
   wbStatusEl.title = t("wb_checking");
 
   setStatusKey(lastWsStatusKey, lastWsStatusKey === "status_connected");
@@ -410,15 +412,6 @@ function drawWbFft(fftData) {
     wbFftCtx.stroke();
   }
   wbFftCtx.setLineDash([]);
-
-  // Frequency labels (IF MHz across 490.5 to 499.5)
-  wbFftCtx.fillStyle = "#7fb0c9";
-  wbFftCtx.font = "11px Trebuchet MS";
-  wbFftCtx.textAlign = "center";
-  for (let i = 0; i <= 9; i++) {
-    const x = (w * i) / 9;
-    wbFftCtx.fillText(formatNumber(490.5 + i, { minimumFractionDigits: 1, maximumFractionDigits: 1 }), x, h - 6);
-  }
 
   // Beacon marker at 10,491.5 = 491.5 relative to 490.5-499.5 span
   const beaconX = ((491.5 - 490.5) / 9.0) * w;

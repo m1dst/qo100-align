@@ -35,11 +35,11 @@
       <div class="conn-row">
         <div>
           <label for="wsIp">Receiver IP</label>
-          <input id="wsIp" type="text" value="192.168.10.47" />
+          <input id="wsIp" type="text" value="192.168.10.47" dir="ltr" inputmode="decimal" spellcheck="false" autocapitalize="off" autocomplete="off" />
         </div>
         <div>
           <label for="wsPort">Port</label>
-          <input id="wsPort" type="number" value="8080" />
+          <input id="wsPort" type="number" value="8080" dir="ltr" inputmode="numeric" />
         </div>
       </div>
       <label for="rxSelect">Receiver source</label>
@@ -56,6 +56,7 @@
       </div>
       <div class="wb-fft-wrap" id="wbFftWrap" hidden>
         <canvas id="wbFftCanvas" width="900" height="260"></canvas>
+        <div class="wb-fft-title" id="wbFftTitle">BATC Wideband FFT (from BATC website)</div>
       </div>
     </section>
 
