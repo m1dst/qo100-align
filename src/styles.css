@@ -424,6 +424,52 @@ canvas {
   font-size: 0.85rem;
 }
 
+.app-footer {
+  width: 100%;
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: #e4f4ff;
+  background: #0f2d40;
+  border-color: #2b4f66;
+}
+
+.build-meta {
+  font-size: 0.84rem;
+  color: #b5d3e6;
+  white-space: nowrap;
+}
+
+.footer-links {
+  display: inline-flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.app-footer a {
+  color: #7ed3ff;
+  text-decoration: none;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app-footer a:hover,
+.app-footer a:focus-visible {
+  text-decoration: underline;
+}
+
+.app-footer a svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  flex: 0 0 auto;
+}
+
 body.disconnected .mer-panel,
 body.disconnected .chart-panel,
 body.disconnected .audio-panel,
@@ -636,6 +682,15 @@ body.disconnected .debug-panel {
   .card {
     border-radius: 12px;
     padding: 11px;
+  }
+
+  .app-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .build-meta {
+    white-space: normal;
   }
 
   .conn-row {
