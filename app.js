@@ -4,6 +4,7 @@ const wsPortInput = document.getElementById("wsPort");
 const rxSelectEl = document.getElementById("rxSelect");
 const connectBtn = document.getElementById("connectBtn");
 const disconnectBtn = document.getElementById("disconnectBtn");
+const globalExitFsBtn = document.getElementById("globalExitFsBtn");
 const merValueEl = document.getElementById("merValue");
 const merMetaEl = document.getElementById("merMeta");
 const rxMetaEl = document.getElementById("rxMeta");
@@ -47,6 +48,7 @@ const debugMode = new URLSearchParams(window.location.search).has("debug");
 let activeExpectedRange = null;
 let batcWs = null;
 let batcReconnectTimer = null;
+let pseudoFullscreenEl = null;
 
 const DISH_MER_PRESETS = {
   "60": { min: 4.5, max: 8.5 },
@@ -65,8 +67,113 @@ function setUiConnected(isConnected) {
 }
 
 function setStatus(text, ok = false) {
+  if (!wsStatus) return;
   wsStatus.textContent = text;
   wsStatus.style.background = ok ? "#1f9f57" : "#00000055";
+}
+
+function isIOSLike() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function disableIOSZoomGestures() {
+  if (!isIOSLike()) return;
+
+  document.addEventListener("gesturestart", (e) => e.preventDefault(), { passive: false });
+  document.addEventListener("gesturechange", (e) => e.preventDefault(), { passive: false });
+  document.addEventListener("gestureend", (e) => e.preventDefault(), { passive: false });
+
+  // Block pinch zoom via touch events
+  document.addEventListener("touchmove", (e) => {
+    if (e.touches && e.touches.length > 1) e.preventDefault();
+  }, { passive: false });
+
+  // Block double-tap zoom (but do not interfere with button/input controls)
+  let lastTouchEnd = 0;
+  document.addEventListener("touchend", (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) e.preventDefault();
+    lastTouchEnd = now;
+  }, { passive: false });
+}
+
+function updateDynamicViewportHeightVar() {
+  const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  document.documentElement.style.setProperty("--app-dvh", `${Math.round(vh)}px`);
+}
+
+function fitMerValueToWidth() {
+  if (!merValueEl) return;
+  const parent = merValueEl.parentElement;
+  if (!parent) return;
+  // Keep a safety gutter so glyphs never clip at the card edge on mobile.
+  const available = Math.max(10, parent.clientWidth - 24);
+  const text = (merValueEl.textContent || "").trim();
+  if (!text) return;
+
+  const style = getComputedStyle(merValueEl);
+  const family = style.fontFamily || "sans-serif";
+  const weight = style.fontWeight || "900";
+  const letterSpacing = parseFloat(style.letterSpacing || "0");
+
+  const canvasMeasure = fitMerValueToWidth._canvas || (fitMerValueToWidth._canvas = document.createElement("canvas"));
+  const mctx = canvasMeasure.getContext("2d");
+  if (!mctx) return;
+
+  const measure = (sizePx) => {
+    mctx.font = `${weight} ${sizePx}px ${family}`;
+    const baseWidth = mctx.measureText(text).width;
+    // Negative tracking can cause underestimation and clipping; ignore it for fit math.
+    const spacing = Number.isFinite(letterSpacing)
+      ? Math.max(0, letterSpacing) * Math.max(0, text.length - 1)
+      : 0;
+    return baseWidth + spacing;
+  };
+
+  let low = 24;
+  let high = Math.max(24, Math.floor(window.innerHeight * 0.9));
+  let best = low;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (measure(mid) <= available) {
+      best = mid;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  const heightCap = Math.max(28, Math.floor(parent.clientHeight * 0.70));
+  merValueEl.style.fontSize = `${Math.min(best, heightCap)}px`;
+}
+
+function enterPseudoFullscreen(element) {
+  if (pseudoFullscreenEl === element) return;
+  if (pseudoFullscreenEl) pseudoFullscreenEl.classList.remove("pseudo-fullscreen");
+  pseudoFullscreenEl = element;
+  pseudoFullscreenEl.classList.add("pseudo-fullscreen");
+  document.body.classList.add("pseudo-fullscreen-active");
+  globalExitFsBtn.hidden = false;
+  // iOS Safari portrait can keep old scroll offset; force top for reliable full-viewport overlay.
+  window.scrollTo(0, 0);
+}
+
+function exitPseudoFullscreen() {
+  if (!pseudoFullscreenEl) return;
+  pseudoFullscreenEl.classList.remove("pseudo-fullscreen");
+  pseudoFullscreenEl = null;
+  document.body.classList.remove("pseudo-fullscreen-active");
+  if (!document.fullscreenElement) globalExitFsBtn.hidden = true;
+}
+
+async function exitAnyFullscreen() {
+  if (document.fullscreenElement) {
+    try { await document.exitFullscreen(); } catch {}
+  }
+  exitPseudoFullscreen();
+  globalExitFsBtn.hidden = true;
+  resizeChartCanvas();
+  if (!wbFftWrapEl.hasAttribute("hidden")) resizeWbFftCanvas();
 }
 
 function setWbStatus(text, level = "") {
@@ -94,6 +201,16 @@ function resizeWbFftCanvas() {
 }
 
 async function toggleFullscreenFor(element) {
+  const mustUsePseudo = isIOSLike() || !document.fullscreenEnabled || !element.requestFullscreen;
+
+  if (mustUsePseudo) {
+    if (pseudoFullscreenEl === element) exitPseudoFullscreen();
+    else enterPseudoFullscreen(element);
+    resizeChartCanvas();
+    if (!wbFftWrapEl.hasAttribute("hidden")) resizeWbFftCanvas();
+    return;
+  }
+
   try {
     if (document.fullscreenElement === element) {
       await document.exitFullscreen();
@@ -103,8 +220,20 @@ async function toggleFullscreenFor(element) {
       await document.exitFullscreen();
     }
     await element.requestFullscreen();
+
+    // Some Safari/iOS builds expose API but do not actually enter fullscreen.
+    setTimeout(() => {
+      if (document.fullscreenElement !== element) {
+        enterPseudoFullscreen(element);
+        resizeChartCanvas();
+        if (!wbFftWrapEl.hasAttribute("hidden")) resizeWbFftCanvas();
+      }
+    }, 120);
   } catch {
-    addDebug("fullscreen unavailable");
+    enterPseudoFullscreen(element);
+    resizeChartCanvas();
+    if (!wbFftWrapEl.hasAttribute("hidden")) resizeWbFftCanvas();
+    addDebug("fullscreen fallback active");
   }
 }
 
@@ -295,7 +424,7 @@ function openBatcMonitor() {
     if (active === 0) {
       setWbStatus("WB occupancy: beacon only (transponder appears empty)", "ok");
     } else {
-      setWbStatus(`WB occupancy warning: ${active} other signal(s) active`, "warn");
+      setWbStatus(`Occupancy Warning: ${active} other signal(s) active`, "warn");
     }
   };
 
@@ -441,6 +570,7 @@ function updateMer(mer, source, rx = null) {
     rxMetaEl.textContent = `Demod: ${demodLabel} | Freq: ${freq} ${service ? `| Service: ${service}` : ""}`;
   }
 
+  fitMerValueToWidth();
   drawChart();
   updateTone(mer);
 }
@@ -541,6 +671,7 @@ function resizeChartCanvas() {
 
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   canvasReady = true;
+  fitMerValueToWidth();
   drawChart();
 }
 
@@ -638,10 +769,17 @@ dishSizeSelectEl.addEventListener("change", applyDishPreset);
 setStatus("Disconnected");
 setUiConnected(false);
 setWbStatus("WB occupancy: checking...");
+disableIOSZoomGestures();
+updateDynamicViewportHeightVar();
+fitMerValueToWidth();
 resizeChartCanvas();
 applyDishPreset();
 updateChartLegend();
 window.addEventListener("resize", resizeChartCanvas);
+window.addEventListener("resize", updateDynamicViewportHeightVar);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", updateDynamicViewportHeightVar);
+}
 if (!debugMode && debugPanelEl) {
   debugPanelEl.style.display = "none";
 }
@@ -658,15 +796,55 @@ window.addEventListener("resize", () => {
   if (!wbFftWrapEl.hasAttribute("hidden")) resizeWbFftCanvas();
 });
 document.addEventListener("fullscreenchange", () => {
+  if (document.fullscreenElement) {
+    exitPseudoFullscreen();
+    globalExitFsBtn.hidden = false;
+  } else if (!pseudoFullscreenEl) {
+    globalExitFsBtn.hidden = true;
+  }
   resizeChartCanvas();
   if (!wbFftWrapEl.hasAttribute("hidden")) resizeWbFftCanvas();
 });
 
-merFullscreenBtn.addEventListener("click", () => toggleFullscreenFor(document.querySelector(".mer-panel")));
-trendFullscreenBtn.addEventListener("click", () => toggleFullscreenFor(document.querySelector(".chart-panel")));
-wbFullscreenBtn.addEventListener("click", () => {
+function bindFullscreenButton(buttonEl, openFn) {
+  let suppressClickUntil = 0;
+  let lastTriggerAt = 0;
+  const trigger = () => {
+    const now = Date.now();
+    if (now - lastTriggerAt < 350) return;
+    lastTriggerAt = now;
+    suppressClickUntil = now + 700;
+    openFn();
+  };
+
+  buttonEl.addEventListener("pointerup", (e) => {
+    if (e.pointerType !== "touch") return;
+    e.preventDefault();
+    trigger();
+  });
+
+  buttonEl.addEventListener("touchend", (e) => {
+    e.preventDefault();
+    trigger();
+  }, { passive: false });
+
+  buttonEl.addEventListener("click", (e) => {
+    if (Date.now() < suppressClickUntil) {
+      e.preventDefault();
+      return;
+    }
+    openFn();
+  });
+}
+
+bindFullscreenButton(merFullscreenBtn, () => toggleFullscreenFor(document.querySelector(".mer-panel")));
+bindFullscreenButton(trendFullscreenBtn, () => toggleFullscreenFor(document.querySelector(".chart-panel")));
+bindFullscreenButton(wbFullscreenBtn, () => {
   if (wbFftWrapEl.hasAttribute("hidden")) wbFftWrapEl.removeAttribute("hidden");
   resizeWbFftCanvas();
   toggleFullscreenFor(wbFftWrapEl);
+});
+globalExitFsBtn.addEventListener("click", () => {
+  exitAnyFullscreen();
 });
 openBatcMonitor();

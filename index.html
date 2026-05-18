@@ -2,18 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Dish Align Monitor</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+  <button id="globalExitFsBtn" class="secondary global-exit-fs" hidden>Exit Fullscreen</button>
   <main class="app">
-    <header class="topbar">
-      <h1>QO100 Dish Align Tool (Winterhill)</h1>
-      <div class="status" id="wsStatus">Disconnected</div>
-    </header>
-
     <section class="connect-panel card">
+      <div class="panel-head">
+        <h2>QO100 Dish Align Tool (Winterhill)</h2>
+      </div>
       <div class="conn-row">
         <div>
           <label for="wsIp">Receiver IP</label>
@@ -75,7 +74,7 @@
         <option value="75">75 cm</option>
         <option value="90">90 cm</option>
         <option value="100">100 cm</option>
-        <option value="110">110 cm</option>
+        <option value="110" selected>110 cm</option>
         <option value="120">120 cm</option>
         <option value="150">150 cm</option>
       </select>
