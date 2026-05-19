@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { minify as minifyHtml } from "html-minifier-terser";
@@ -72,8 +72,9 @@ async function main() {
     writeFile(path.join(distDir, "app.js"), jsOut.code, "utf8"),
     writeFile(path.join(distDir, "index.html"), htmlFinal, "utf8")
   ]);
+  await cp(path.join(srcDir, "i18n"), path.join(distDir, "i18n"), { recursive: true });
 
-  console.log("Build complete: dist/index.html, dist/styles.css, dist/app.js");
+  console.log("Build complete: dist/index.html, dist/styles.css, dist/app.js, dist/i18n/*.json");
 }
 
 main().catch((err) => {
