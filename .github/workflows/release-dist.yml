@@ -47,3 +47,8 @@ jobs:
             gh release create latest --title "Latest Build" --target "${GITHUB_SHA}"
           fi
           gh release upload latest qo100-align-dist.tar.gz qo100-align-dist.sha256 --clobber
+
+      - name: Move latest tag to this commit
+        run: |
+          git tag -f latest "${GITHUB_SHA}"
+          git push origin refs/tags/latest --force
