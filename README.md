@@ -2,6 +2,8 @@
 
 Web-based dish alignment UI for Winterhill/Longmynd style MER monitoring.
 
+<img src="docs/images/qo100-align-ui.png" alt="QO100 Align Tool Screenshot" width="700" />
+
 ## Features
 
 - Connect to local WebSocket receiver (`ws://<ip>:<port>`)
@@ -61,6 +63,41 @@ Default production URL:
 
 - `http://localhost:4173`
 
+## Raspberry Pi Install (HTTP port 80)
+
+See the beginner guide:
+
+- `docs/raspberry-pi-install.md`
+
+This installer does not build on the Pi. It downloads a prebuilt `dist` artifact from GitHub Releases.
+
+Quick command pattern:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/m1dst/qo100-align/master/scripts/install-pi.sh | bash
+```
+
+Stop Nginx quickly:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/m1dst/qo100-align/master/scripts/stop-nginx.sh | bash
+```
+
+Uninstall deployment:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/m1dst/qo100-align/master/scripts/uninstall-pi.sh | bash
+```
+
+This intentionally serves over HTTP (not HTTPS) to avoid mixed-content blocking with `ws://` receiver connections.
+
+## CI Release Artifact
+
+GitHub Actions workflow `.github/workflows/release-dist.yml` builds `dist/` on pushes to `master` and publishes release assets:
+
+- `qo100-align-dist.tar.gz`
+- `qo100-align-dist.sha256`
+
 ## Clean Build Output
 
 ```bash
@@ -83,22 +120,3 @@ The app stores last successful IP/port and restores it on next load.
 Add `?debug=1` to URL to show payload debug panel:
 
 - `http://localhost:5173/?debug=1`
-
-## Raspberry Pi Notes
-
-1. Install Node.js 18+ on the Pi.
-2. Copy/clone this repo.
-3. Run:
-
-```bash
-npm install
-npm run build
-npm run start
-```
-
-4. Open from iPhone browser on same network:
-
-- `http://<raspberry-pi-ip>:4173`
-
-If you prefer serving static files from another web server, deploy the contents of `dist/`.
-

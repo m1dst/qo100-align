@@ -1,0 +1,49 @@
+name: Build and Publish Web Dist
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+permissions:
+  contents: write
+
+jobs:
+  build-release-asset:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build dist
+        run: npm run build
+
+      - name: Package dist tarball
+        run: |
+          tar -czf qo100-align-dist.tar.gz -C dist .
+          sha256sum qo100-align-dist.tar.gz > qo100-align-dist.sha256
+
+      - name: Create or update latest release and upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view latest >/dev/null 2>&1; then
+            gh release edit latest --title "Latest Build" --target "${GITHUB_SHA}"
+          else
+            gh release create latest --title "Latest Build" --target "${GITHUB_SHA}"
+          fi
+          gh release upload latest qo100-align-dist.tar.gz qo100-align-dist.sha256 --clobber
